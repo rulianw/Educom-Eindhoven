@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Dashboard from '../views/DashboardView.vue'
-import TaskDetailView from '../components/TaskDetailView.vue/index.js'
+import TaskDetailView from '../components/TaskDetailView.vue'
 
 const routes = [
   { path: '/', name: 'Dashboard', component: Dashboard },
@@ -12,4 +12,4 @@ const router = createRouter({
   routes,
 })
 
-export default router 
+export default router
