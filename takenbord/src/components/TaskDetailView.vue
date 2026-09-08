@@ -17,10 +17,10 @@ const task = computed(() => tasks.value.find(t => t.id === Number(props.id)))
 
 <template>
   <div class="task-detail-view" v-if="task">
-    <h1>Task Detail View</h1>
-    <h2>{{ task.title }}</h2>
+    <h1>{{ task.title }}</h1>
     <p>Status: {{ task.status }}</p>
     <p>Description: {{ task.description }}</p>
+    <button @click="$router.back()">x</button>
   </div>
 </template>
 
