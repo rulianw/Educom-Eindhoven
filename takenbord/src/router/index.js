@@ -4,7 +4,15 @@ import TaskDetailView from '../components/TaskDetailView.vue'
 
 const routes = [
   { path: '/', name: 'Dashboard', component: Dashboard },
-  { path: '/task/:id', name: 'TaskDetail', component: TaskDetailView, props: true },
+  { 
+    path: '/task/:id', 
+    name: 'TaskDetail', 
+    components: {
+      default: Dashboard,
+      modal: TaskDetailView,
+    },
+    props: { modal: true },
+    }
 ]
 
 const router = createRouter({
