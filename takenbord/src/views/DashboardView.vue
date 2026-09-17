@@ -2,19 +2,23 @@
 import draggable from 'vuedraggable'
 import { useDashboardStore } from '../stores/useDashboardStore.js'
 import { ref, watch, onUnmounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import iconNeutral from '../img/icon-neutral.png'
 import iconTodo from '../img/icon-todo.png'
 import iconInProgress from '../img/icon-in-progress.png'
 import iconDone from '../img/icon-done.png'
 
 const dashboardStore = useDashboardStore()
+const { todoTasks, progressTasks, doneTasks } = storeToRefs(dashboardStore)
 
 const localTodo = ref([])
 const localProgress = ref([])
 const localDone = ref([])
 const trashZone = ref([])
 
+const titleTouched = ref(false)
 const currentIcon = ref(iconNeutral)
+const iconPop = ref(false)
 let hideTimer = null
 
 function iconForStatus(status) {
@@ -27,6 +31,9 @@ function iconForStatus(status) {
 
 function flashIcon(status) {
   currentIcon.value = iconForStatus(status)
+  iconPop.value = true
+  setTimeout(() => { iconPop.value = false }, 250)
+
   if (hideTimer) clearTimeout(hideTimer)
   hideTimer = setTimeout(() => {
     currentIcon.value = iconNeutral
@@ -38,19 +45,18 @@ onUnmounted(() => {
   if (hideTimer) clearTimeout(hideTimer)
 })
 
-function syncTasks() {
-  localTodo.value = dashboardStore.tasks.filter(task => task.status === 'To Do')
-  localProgress.value = dashboardStore.tasks.filter(task => task.status === 'In Progress')
-  localDone.value = dashboardStore.tasks.filter(task => task.status === 'Completed')
+function syncFromStore() {
+  localTodo.value = [...todoTasks.value]
+  localProgress.value = [...progressTasks.value]
+  localDone.value = [...doneTasks.value]
 }
 
-syncTasks()
-
-watch(() => dashboardStore.tasks, syncTasks, { deep: true })
+syncFromStore()
+watch([todoTasks, progressTasks, doneTasks], syncFromStore)
 
 function onDrop(event, newStatus) {
   if (event.added) {
-    dashboardStore.changeStatus(event.added.element.id, newStatus)
+    dashboardStore.moveTask(event.added.element.id, newStatus)
     flashIcon(newStatus)
   }
 }
@@ -79,10 +85,10 @@ function submitTask() {
   }
 
   flashIcon('To Do')
-
   newTaskTitle.value = ''
   newTaskDescription.value = ''
   newTaskPriority.value = ''
+  titleTouched.value = false
 }
 </script>
 
@@ -100,7 +106,11 @@ function submitTask() {
             v-model="newTaskTitle"
             placeholder="New task title"
             required
+            @blur="titleTouched = true"
           />
+          <div v-if="titleTouched && newTaskTitle.length < 5" class="error-message">
+            Title must be at least 5 characters long.
+          </div>
           <textarea
             class="new-task-description"
             v-model="newTaskDescription"
@@ -119,9 +129,8 @@ function submitTask() {
 
       <section class="remove-task-section">
         <div class="remove-task-header">
-          <div>
+          <div class="column-header">
             <h2>Remove Task</h2>
-            <p>Drag a task here to remove it.</p>
           </div>
           <span class="remove-icon">×</span>
         </div>
@@ -149,8 +158,7 @@ function submitTask() {
       </section>
 
       <div class="icon-container">
-        <div class = "column-header">Status</div>
-        <img :src="currentIcon" alt="status icon" class="status-icon" />
+        <img :src="currentIcon" class="status-icon" :class="{ 'icon-pop': iconPop }" />
       </div>
     </div>
 
@@ -162,7 +170,7 @@ function submitTask() {
           group="tasks"
           item-key="id"
           class="column-list"
-          @change="e => onDrop(e, 'To Do')"
+          @change="e => onDrop(e, dashboardStore.status[0])"
         >
           <template #item="{ element: task }">
             <div class="task-card">
@@ -183,7 +191,7 @@ function submitTask() {
           group="tasks"
           item-key="id"
           class="column-list"
-          @change="e => onDrop(e, 'In Progress')"
+          @change="e => onDrop(e, dashboardStore.status[1])"
         >
           <template #item="{ element: task }">
             <div class="task-card">
@@ -204,7 +212,7 @@ function submitTask() {
           group="tasks"
           item-key="id"
           class="column-list"
-          @change="e => onDrop(e, 'Completed')"
+          @change="e => onDrop(e, dashboardStore.status[2])"
         >
           <template #item="{ element: task }">
             <div class="task-card">
@@ -298,6 +306,17 @@ function submitTask() {
   align-items: start;
 }
 
+.button {
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+.button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.button:active {
+  transform: translateY(0);
+}
+
 .new-task-priority {
   width: 100%;
   padding: 0.6rem 1rem;
@@ -335,6 +354,7 @@ function submitTask() {
   font-size: 1.05rem;
   padding: 0.9rem 1.1rem;
   color: var(--color-ink);
+  border-radius: 1rem;
 }
 
 .column-todo     { background: color-mix(in srgb, var(--color-lagoon) 18%, white); }
@@ -352,6 +372,23 @@ function submitTask() {
   gap: 0.9rem;
   min-height: 80px;
   padding: 1rem;
+}
+.icon-pop {
+  animation: pop 0.25s ease;
+}
+@keyframes pop {
+  0%   { transform: scale(0.7); }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.error-message {
+  color: var(--color-sangria);
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: -0.25rem;
+  margin-bottom: 0.25rem;
+  padding-left: 0.25rem;
 }
 
 .remove-task-section {
@@ -443,6 +480,10 @@ function submitTask() {
   font-weight: 700;
 }
 
+.status-icon {
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
 .task-card {
   display: flex;
   flex-direction: column;
@@ -464,6 +505,19 @@ function submitTask() {
   color: var(--color-ink);
 }
 
+.task-list-enter-active,
+.task-list-leave-active {
+  transition: all 0.3s ease;
+}
+.task-list-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+.task-list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
 .task-form {
   display: flex;
   flex-direction: column;
@@ -478,6 +532,7 @@ function submitTask() {
   border: 1px solid var(--color-seabreeze);
   font-family: var(--font-body);
   font-size: 0.95rem;
+  margin-bottom:1rem;
 }
 
 .new-task-description {

@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Dashboard from '../views/DashboardView.vue'
-import TaskDetailView from '../components/TaskDetailView.vue'
+import TaskDetailView from '../views/TaskDetailView.vue'
 
 const routes = [
   { path: '/', name: 'Dashboard', component: Dashboard },
