@@ -147,6 +147,7 @@ function submitEdit() {
 .bar {
   display: flex;
   gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .status-pill {

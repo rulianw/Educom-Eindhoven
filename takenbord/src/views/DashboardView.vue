@@ -7,6 +7,7 @@ import iconNeutral from '../img/icon-neutral.png'
 import iconTodo from '../img/icon-todo.png'
 import iconInProgress from '../img/icon-in-progress.png'
 import iconDone from '../img/icon-done.png'
+import BarChart from '../components/BarChart.vue'
 
 const dashboardStore = useDashboardStore()
 const { todoTasks, progressTasks, doneTasks } = storeToRefs(dashboardStore)
@@ -20,6 +21,7 @@ const titleTouched = ref(false)
 const currentIcon = ref(iconNeutral)
 const iconPop = ref(false)
 let hideTimer = null
+let popTimer = null
 
 function iconForStatus(status) {
   return {
@@ -31,18 +33,31 @@ function iconForStatus(status) {
 
 function flashIcon(status) {
   currentIcon.value = iconForStatus(status)
-  iconPop.value = true
-  setTimeout(() => { iconPop.value = false }, 250)
+  iconPop.value = false
+
+  requestAnimationFrame(() => {
+    iconPop.value = true
+
+    if (popTimer) clearTimeout(popTimer)
+
+    popTimer = setTimeout(() => {
+      iconPop.value = false
+      popTimer = null
+    }, 250)
+  })
 
   if (hideTimer) clearTimeout(hideTimer)
+
   hideTimer = setTimeout(() => {
     currentIcon.value = iconNeutral
     hideTimer = null
   }, 4000)
 }
 
+
 onUnmounted(() => {
   if (hideTimer) clearTimeout(hideTimer)
+  if (popTimer) clearTimeout(popTimer)
 })
 
 function syncFromStore() {
@@ -226,6 +241,10 @@ function submitTask() {
         </draggable>
       </section>
     </div>
+    <!-- <section class="chart-section">
+      <div class="column-header">Task Overview</div>
+      <BarChart :todo-count="todoTasks.length" :progress-count="progressTasks.length" :done-count="doneTasks.length" />
+    </section> -->
   </div>
 </template>
 
@@ -315,6 +334,15 @@ function submitTask() {
 }
 .button:active {
   transform: translateY(0);
+}
+
+.chart-section {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-seabreeze);
+  padding: 1.5rem;
+  margin-top: 2.5rem;
+  max-width: 500px;
 }
 
 .new-task-priority {
