@@ -108,37 +108,17 @@ function submitTask() {
 </script>
 
 <template>
-  <!--
-    Bulma's ".section" adds standard page padding, and ".container.is-fluid"
-    keeps content full-width instead of Bulma's default centered max-width 
-  -->
+
   <section class="section">
     <div class="container is-fluid">
-
-      <!--
-        ".title.is-2" is Bulma's heading size scale (is-1 through is-6).
-        "mb-6" is a Bulma SPACING HELPER: margin-bottom, size 6 on Bulma's
-        0–6 spacing scale. These helper classes exist so you rarely need
-        custom margin/padding CSS at all.
-      -->
       <h1 class="title is-2 has-text-weight-bold mb-6">
         Kanban Board
       </h1>
 
-      <!--
-        ".columns" + ".column" is Bulma's grid system (flexbox under the hood).
-        "is-variable is-6" controls the GAP between columns (Bulma's gap scale
-        also runs 0–8). This single line replaces your old CSS grid rules
-        for ".upper-container".
-      -->
       <div class="columns is-variable is-6 mb-6">
 
-        <!-- "is-one-third" = exactly 33% width — one of Bulma's fixed column-width classes -->
         <div class="column is-one-third">
-          <!--
-            ".box" is a Bulma ELEMENT: white background, rounded corners,
-            subtle shadow, out of the box. 
-          -->
+
           <div class="box upper-box">
 
             <form @submit.prevent="submitTask">
@@ -147,12 +127,6 @@ function submitTask() {
                 Add New Task
               </h2>
 
-              <!--
-                Bulma's required form structure: ".field" wraps one row and
-                manages spacing between fields; ".control" wraps the actual
-                input. Skipping this wrapper is why a bare "<input class='input'>"
-                won't look quite right — Bulma's CSS expects this nesting.
-              -->
               <div class="field">
                 <label class="label">Title</label>
                 <div class="control">
@@ -167,10 +141,6 @@ function submitTask() {
                 </div>
               </div>
 
-              <!--
-                ".help.is-danger" is Bulma's built-in error-text style
-                (small, red text).
-              -->
               <p
                 v-if="titleTouched && newTaskTitle.length < 5"
                 class="help is-danger mb-4"
@@ -181,7 +151,6 @@ function submitTask() {
               <div class="field">
                 <label class="label">Description</label>
                 <div class="control">
-                  <!-- ".textarea" is Bulma's multi-line input equivalent of ".input" -->
                   <textarea
                     class="textarea"
                     v-model="newTaskDescription"
@@ -194,11 +163,6 @@ function submitTask() {
               <div class="field">
                 <label class="label">Priority</label>
                 <div class="control">
-                  <!--
-                    Bulma's select styling is unusual: ".select" goes on the
-                    WRAPPING div, not the <select> itself — this is how Bulma
-                    draws its custom dropdown arrow via CSS.
-                  -->
                   <div class="select is-fullwidth">
                     <select v-model="newTaskPriority" required>
                       <option value="" disabled>Select priority</option>
@@ -212,12 +176,6 @@ function submitTask() {
 
               <div class="field mt-5">
                 <div class="control">
-                  <!--
-                    ".button" is the base Bulma button; "is-warning" is a
-                    COLOR MODIFIER (mapped to your butter/yellow via the
-                    Sass variable override in bulma-custom.scss);
-                    "is-rounded" gives it a pill shape.
-                  -->
                   <button
                     type="submit"
                     class="button is-warning is-rounded has-text-weight-bold"
@@ -234,11 +192,6 @@ function submitTask() {
         <div class="column is-one-third">
           <section class="box upper-box remove-box">
 
-            <!--
-              ".level" is a Bulma layout component for "stuff on the left,
-              stuff on the right" — an alternative to writing your own
-              flexbox "justify-content: space-between" rule by hand.
-            -->
             <div class="level mb-4">
               <div class="level-left">
                 <h2 class="title is-5 has-text-danger mb-1">
@@ -251,11 +204,6 @@ function submitTask() {
               </div>
             </div>
 
-            <!--
-              CUSTOM: vuedraggable's drop zone and its dashed "drop here"
-              styling have no Bulma equivalent — Bulma has no drag-and-drop
-              component, so this stays hand-written CSS below.
-            -->
             <draggable
               v-model="trashZone"
               group="tasks"
@@ -284,7 +232,6 @@ function submitTask() {
 
         <div class="column is-one-third">
           <div class="box upper-box icon-box is-flex is-align-items-center is-justify-content-center">
-            <!-- ".image.is-256x256" is Bulma's fixed-size image container helper -->
             <figure class="image is-256x256">
               <img
                 :src="currentIcon"
@@ -300,16 +247,7 @@ function submitTask() {
 
       <div class="columns is-variable is-5">
 
-        <!--
-          Each kanban column below follows the same structure — annotated
-          fully here on "To Do" only; "In Progress" and "Completed" repeat
-          it identically aside from status/color.
-        -->
         <section class="column">
-          <!--
-            ".card" is Bulma's structured card component (it expects
-            .card-header + .card-content children, styled to fit together).
-          -->
           <div class="card kanban-column column-todo">
             <header class="card-header column-header">
               <p class="card-header-title">To Do</p>
@@ -446,14 +384,12 @@ function submitTask() {
 </template>
 
 <style scoped>
-/* Keeps the three top panels a consistent height regardless of content length */
 .upper-box {
   min-height: clamp(200px, 35vw, 420px);
   max-height: clamp(200px, 35vw, 420px);
   overflow: auto;
 }
 
-/* The little "pop" animation the status icon plays each time a task moves */
 .status-icon {
   object-fit: contain;
   transition: transform 0.25s ease, opacity 0.2s ease;
@@ -467,13 +403,11 @@ function submitTask() {
   100% { transform: scale(1); }
 }
 
-/* The "Remove Task" panel's red-tinted background — Bulma's box is neutral by default */
 .remove-box {
   border: 1px solid color-mix(in srgb, var(--color-sangria) 25%, white);
   background: color-mix(in srgb, var(--color-sangria) 5%, white);
 }
 
-/* The dashed drop target itself — vuedraggable + custom styling, no Bulma part in this */
 .remove-task-area {
   min-height: 180px;
   padding: 0.75rem;
@@ -508,7 +442,6 @@ function submitTask() {
   font-size: 0.85rem;
 }
 
-/* The tinted background per kanban column — your brand colors, not Bulma's */
 .kanban-column {
   overflow: hidden;
   border-radius: var(--radius-lg);
@@ -529,7 +462,6 @@ function submitTask() {
   transition: transform 0.25s ease, opacity 0.2s ease;
 }
 
-/* Grab-cursor feedback while dragging a task card */
 .task-card {
   cursor: grab;
 }
@@ -537,7 +469,6 @@ function submitTask() {
   cursor: grabbing;
 }
 
-/* Fixed sizing for the small "×" badge on the Remove Task panel */
 .remove-icon {
   width: 30px;
   height: 30px;
@@ -548,7 +479,6 @@ function submitTask() {
   font-weight: 700;
 }
 
-/* Keeps an empty column from collapsing to zero height, so it's still a visible drop target */
 .column-list {
   min-height: 80px;
 }
@@ -557,7 +487,6 @@ function submitTask() {
   background: white;
 }
 
-/* Shrinks the top panels on small screens instead of forcing the same fixed height */
 @media screen and (max-width: 768px) {
   .upper-box {
     min-height: 220px;
